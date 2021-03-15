@@ -12,22 +12,24 @@ class Client(DatagramProtocol):
     def __init__(self, host, port):
         if host == 'localhost':
             host = '127.0.0.1'
+        self.address = None
         self.id = host, port
+        self.server = '127.0.0.1', 9999
         print("Working on id: {}".format(self.id))
 
-    def startConnection(self):
-        self.transport.write("ready".encode("utf-8"), self.address)
+    def startProtocol(self):
+        self.transport.write("ready".encode("utf-8"), self.server)
 
-    def socket_received(self, datagram, address):
+    def datagramReceived(self, datagram, addr):
         datagram = datagram.decode("utf-8")
-        if address == self.address:
+        if addr == self.server:
             print("Choose a clinet from these\n {}".format(datagram))
             self.address = input("write host: "), int(input("Enter port: "))
             reactor.callInThread(self.send_message)
             # addresses = datagram.split("\n")
             # self.address = addresses[int(input())]
-
-        print("{} : {}".format(address, datagram))
+        else:
+            print("{} : {}".format(addr, datagram))
 
     def send_message(self):
         while True:
